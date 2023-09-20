@@ -11,17 +11,17 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 src_path = os.path.abspath(os.path.join(project_root, "src"))
 sys.path.insert(0, src_path)
 
-
+icon = Image.open("assets/Everything-GPT.ico")
 
 #### Set Page Config
 def page_config():
     st.set_page_config(
         page_title="GPT Use Cases",
-        page_icon="❇️",
+        page_icon=icon,
         layout="wide",
         menu_items={"About": "A simple web app for various GPT Use Cases"},
     )
-    with open("assets/Title-Image-dark-small.png", "rb") as f:
+    with open("assets/Everything-GPT-dark.png", "rb") as f:
         data = base64.b64encode(f.read()).decode("utf-8")
         st.sidebar.markdown(
         f"""

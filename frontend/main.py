@@ -36,7 +36,7 @@ if st.sidebar.button("QnA with your data 📒", use_container_width=True):
 
 
 # Define the header for the page
-st.header("Summarize CV", divider='violet')
+st.header("Summarize CV", divider='orange')
 st.info("""
         Extract and summarize the CV or resume using Open AI's GPT Large Language Model. You can select the output type as below:\n
         1. Summerized text covering key information.

@@ -190,7 +190,7 @@ def summarization():
     switch_main()
 
     # Define the header for the page
-    st.header("Summarize Text", divider='violet')
+    st.header("Summarize Text", divider='orange')
     #st.divider()
     st.info("""
             Summarize the content using Large Language models. You can select input method from following three options:\n

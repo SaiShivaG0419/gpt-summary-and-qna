@@ -136,7 +136,7 @@ def chat_with_data():
     switch_main()
 
     # Define the header for the page
-    st.header("QnA with your data", divider='violet')
+    st.header("QnA with your data", divider='orange')
     #st.divider()
     st.info("""
             Upload your text data, paste a web page url or paste a YouTube URL to ask queries or retrieve needed information from the uploaded information :\n
@@ -160,7 +160,7 @@ def chat_with_data():
                             **Steps to Manage Knowledge Base:**\n
                             1. Browse to select files and click "Upload Documents" to upload selected files to knowledge base.
                             2. In the right side, **KB_Snapshot** tab displays file count and you can reset directory by clicking **Reset Local Directory** button.
-                            3. In the **Manage_DB** tab, click **Digest Documents** to build the vector database. Upon successful build, File count should be 2.
+                            3. In the **Manage_DB** tab, click **Build Vector Database** to build the vector database. Upon successful build, File count should be 2.
                             4. Optionally, you can reset the vector database by clicking **Reset Vector Database** button.
                             5. Once knowledge base built, you can proceed to ask the related questions from documents.
                             """)
@@ -173,7 +173,7 @@ def chat_with_data():
                             delete_folder_contents(kb_path)
                         st.metric(label="Files in Local Directory", value=count_files_in_directory(kb_path))
                     with tab2:
-                        digest_button = st.button(label="Digest Documents", use_container_width=True)                        
+                        digest_button = st.button(label="Build Vector Database", use_container_width=True)                        
                         if digest_button:
                             db_state = process_documents()
                         
