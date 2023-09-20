@@ -1,0 +1,14 @@
+openai
+python-dotenv==1.0.0
+pdfminer.six
+streamlit
+streamlit-extras
+tiktoken
+trafilatura
+docx2txt
+langchain
+faiss-cpu
+unstructured
+youtube-transcript-api
+pytube
+openpyxl
