@@ -1,20 +1,24 @@
 """This file to define basic functionalities using Open AI's GPT models. """
 
 import os
+import json
 import openai  # Importing Open AI library
 import tiktoken  # Importing tiktoken library to calculate the number of tokens
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import RetrievalQA
 
+# Get the absolute path to the project root directory
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
-from dotenv import load_dotenv, find_dotenv
 
-_ = load_dotenv(find_dotenv())  # read local .env file
+# Load the config.json file
+with open(f"{project_root}/config/config.json", "r") as config_file:
+    config = json.load(config_file)
 
 # openai.api_key = os.environ["OPENAI_API_KEY"]  # Reading Open AI API Key from environment file
-default_model = os.environ["DEFAULT_MODEL"]  # Default gpt model for use - gpt-3.5-turbo
-large_context_model = os.environ[
+default_model = config["DEFAULT_MODEL"]  # Default gpt model for use - gpt-3.5-turbo
+large_context_model = config[
     "LARGE_CONTEXT_MODEL"
 ]  # Large context gpt model for large amount of tokens - gpt-3.5-turbo-16k
 
@@ -23,13 +27,14 @@ class GPT_UTILS:
     """A class to define various utilities for GPT usage"""
 
     def __init__(self, api_key) -> None:
+        self.api_key = api_key
         self.default_model = default_model
         self.large_context_model = large_context_model
-        self.embeddings = OpenAIEmbeddings()
+        self.embeddings = OpenAIEmbeddings(openai_api_key=self.api_key)
         self.langchain_llm = ChatOpenAI(
-            model=self.default_model, temperature=0.5, max_tokens=512
+            openai_api_key=self.api_key, model=self.default_model, temperature=0.5, max_tokens=512
         )
-        self.api_key = api_key
+        
 
     def validate_key(self) -> bool:
         """A function to validate the Open AI API Key"""

@@ -35,11 +35,15 @@ def page_config():
         data = base64.b64encode(f.read()).decode("utf-8")
         st.sidebar.markdown(
             f"""
-        <div style="display:table;margin-top:-30%; margin-left: 10%;">
-            <img src="data:image/png;base64,{data}" >
-        </div>
-        """,
-            unsafe_allow_html=True,
+            <div style="display:table;margin-top:-30%; margin-left: 10%;">
+                <img src="data:image/png;base64,{data}" >
+            </div>
+
+            <div style="position: fixed; bottom: 0; text-align: center; padding: 10px;">
+                <p>Developed by <a href="https://www.linkedin.com/in/saishivagudla/">SaiShiva G</a></p>
+            </div>
+            """,
+            unsafe_allow_html=True
         )
 
     if "valid_key" not in st.session_state:
@@ -49,7 +53,7 @@ def page_config():
     with st.sidebar:
         api_key_form = st.form("OPENAI_API_KEY_FORM")
         openai_api_key_input = api_key_form.text_input(
-            "Paste your OpenAI API Key",
+            "Input your OpenAI API Key 🔑",
             type="password",
             placeholder="Paste your API Key here (sk-...)",
             help="You can get your API key from https://platform.openai.com/account/api-keys.",

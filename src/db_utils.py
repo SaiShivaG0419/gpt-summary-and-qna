@@ -4,6 +4,7 @@
 
 import os
 import time
+import json
 from langchain.vectorstores import FAISS
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.document_loaders import (
@@ -16,24 +17,22 @@ from langchain.docstore.document import Document
 from langchain.document_loaders import YoutubeLoader
 
 
-from dotenv import load_dotenv, find_dotenv
-
-_ = load_dotenv(find_dotenv())  # read local .env file
-
-# Load Environment Variables
-KNOWLDGE_BASE_DIR = os.environ[
-    "KNOWLDGE_BASE_DIR"
-]  # Load Knowledge base directory name
-FAISS_DB_DIR = os.environ["FAISS_DB_DIR"]  # Load Vector database directory name
-CHUNK_SIZE = int(
-    os.environ["CHUNK_SIZE"]
-)  # Loading Text chunk size as integer variable
-CHUNK_OVERLAP = int(
-    os.environ["CHUNK_OVERLAP"]
-)  # Loading Text chunk overlap as integer variable
-
 # Get the absolute path to the project root directory
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+
+# Load the config.json file
+with open(f"{project_root}/config/config.json", "r") as config_file:
+    config = json.load(config_file)
+
+# Load Config Values
+KNOWLDGE_BASE_DIR = config[
+    "KNOWLDGE_BASE_DIR"
+]  # Load Knowledge base directory name
+FAISS_DB_DIR = config["FAISS_DB_DIR"]  # Load Vector database directory name
+CHUNK_SIZE = config["CHUNK_SIZE"]  # Loading Text chunk size as integer variable
+CHUNK_OVERLAP = config["CHUNK_OVERLAP"]  # Loading Text chunk overlap as integer variable
+
 
 knowledge_base_path = f"{project_root}/{KNOWLDGE_BASE_DIR}"
 faiss_db_path = f"{project_root}/{FAISS_DB_DIR}"
