@@ -12,9 +12,7 @@ from dotenv import load_dotenv, find_dotenv
 
 _ = load_dotenv(find_dotenv())  # read local .env file
 
-openai.api_key = os.environ[
-    "OPENAI_API_KEY"
-]  # Reading Open AI API Key from environment file
+# openai.api_key = os.environ["OPENAI_API_KEY"]  # Reading Open AI API Key from environment file
 default_model = os.environ["DEFAULT_MODEL"]  # Default gpt model for use - gpt-3.5-turbo
 large_context_model = os.environ[
     "LARGE_CONTEXT_MODEL"
@@ -24,17 +22,19 @@ large_context_model = os.environ[
 class GPT_UTILS:
     """A class to define various utilities for GPT usage"""
 
-    def __init__(self) -> None:
+    def __init__(self, api_key) -> None:
         self.default_model = default_model
         self.large_context_model = large_context_model
         self.embeddings = OpenAIEmbeddings()
-        self.langchain_llm = ChatOpenAI(model=self.default_model,
-                                        temperature=0.5,
-                                        max_tokens=512)
+        self.langchain_llm = ChatOpenAI(
+            model=self.default_model, temperature=0.5, max_tokens=512
+        )
+        self.api_key = api_key
 
     def validate_key(self) -> bool:
         """A function to validate the Open AI API Key"""
 
+        openai.api_key = self.api_key
         try:
             response = openai.ChatCompletion.create(
                 model=self.default_model,  # loading default gpt model
@@ -65,10 +65,10 @@ class GPT_UTILS:
         except KeyError:
             print("Warning: model not found.")  # Terminal Error message for debugging
             return None
-        
+
     def select_model(self, messages, max_tokens):
         """A function to decide the model choice between regular or large context."""
-        
+
         num_tokens = self.num_tokens_from_string(
             str(messages)
         )  # Get number of prompt tokens
@@ -86,9 +86,12 @@ class GPT_UTILS:
 
         return model
 
-    def get_completion_from_messages(self, messages, functions=[], temperature=0.5, max_tokens=1750):
+    def get_completion_from_messages(
+        self, messages, functions=[], temperature=0.5, max_tokens=1750
+    ):
         """A function to get completion from provided messages using GPT models."""
-        
+
+        openai.api_key = self.api_key
         if len(functions) > 0:
             response = openai.ChatCompletion.create(
                 model=self.select_model(messages=messages, max_tokens=max_tokens),
@@ -107,26 +110,23 @@ class GPT_UTILS:
             )
 
         return response
-    
-    def retrieval_qa(self, query, prompt, db, return_source_documents: bool=True):
-        """A function to use retrivers from vectorstores and generate completions with GPT models. """
 
+    def retrieval_qa(self, query, prompt, db, return_source_documents: bool = True):
+        """A function to use retrivers from vectorstores and generate completions with GPT models."""
+
+        openai.api_key = self.api_key
         try:
-            retriever = db.as_retriever(search_type="mmr", search_kwargs={'k': 6})
-            retriever_qa_chain = RetrievalQA.from_chain_type(llm=self.langchain_llm,
-                                                            retriever=retriever,
-                                                            chain_type="stuff",
-                                                            return_source_documents=return_source_documents,
-                                                            chain_type_kwargs={"prompt": prompt})
-            result = retriever_qa_chain({'query': query})
+            retriever = db.as_retriever(search_type="mmr", search_kwargs={"k": 6})
+            retriever_qa_chain = RetrievalQA.from_chain_type(
+                llm=self.langchain_llm,
+                retriever=retriever,
+                chain_type="stuff",
+                return_source_documents=return_source_documents,
+                chain_type_kwargs={"prompt": prompt},
+            )
+            result = retriever_qa_chain({"query": query})
 
             return result
         except Exception as e:
             print(f"Error retrieving response: {e}")
             return None
-            
-
-
-
-
-

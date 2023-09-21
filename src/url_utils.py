@@ -3,9 +3,11 @@ import trafilatura
 from trafilatura.settings import use_config
 from courlan import validate_url, check_url
 
+
 def validate_input_url(url):
     """A simple function to validate the url"""
     return validate_url(url)[0]
+
 
 def validate_youtube_url(url):
     """A simple function to validate Youtube urls"""

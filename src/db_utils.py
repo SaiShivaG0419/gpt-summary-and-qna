@@ -6,7 +6,12 @@ import os
 import time
 from langchain.vectorstores import FAISS
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.document_loaders import TextLoader, PDFMinerLoader, UnstructuredWordDocumentLoader, UnstructuredExcelLoader
+from langchain.document_loaders import (
+    TextLoader,
+    PDFMinerLoader,
+    UnstructuredWordDocumentLoader,
+    UnstructuredExcelLoader,
+)
 from langchain.docstore.document import Document
 from langchain.document_loaders import YoutubeLoader
 
@@ -16,10 +21,16 @@ from dotenv import load_dotenv, find_dotenv
 _ = load_dotenv(find_dotenv())  # read local .env file
 
 # Load Environment Variables
-KNOWLDGE_BASE_DIR = os.environ["KNOWLDGE_BASE_DIR"]  # Load Knowledge base directory name
+KNOWLDGE_BASE_DIR = os.environ[
+    "KNOWLDGE_BASE_DIR"
+]  # Load Knowledge base directory name
 FAISS_DB_DIR = os.environ["FAISS_DB_DIR"]  # Load Vector database directory name
-CHUNK_SIZE = int(os.environ["CHUNK_SIZE"])  # Loading Text chunk size as integer variable
-CHUNK_OVERLAP = int(os.environ["CHUNK_OVERLAP"]) # Loading Text chunk overlap as integer variable
+CHUNK_SIZE = int(
+    os.environ["CHUNK_SIZE"]
+)  # Loading Text chunk size as integer variable
+CHUNK_OVERLAP = int(
+    os.environ["CHUNK_OVERLAP"]
+)  # Loading Text chunk overlap as integer variable
 
 # Get the absolute path to the project root directory
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -28,10 +39,8 @@ knowledge_base_path = f"{project_root}/{KNOWLDGE_BASE_DIR}"
 faiss_db_path = f"{project_root}/{FAISS_DB_DIR}"
 
 
-
 class VECTOR_DB_UTILS:
-    """ A class to define various utilities for vector databases.
-    """
+    """A class to define various utilities for vector databases."""
 
     def __init__(self) -> None:
         self.knowledge_base_path = knowledge_base_path
@@ -39,20 +48,20 @@ class VECTOR_DB_UTILS:
         self.chunk_size = CHUNK_SIZE
         self.chunk_overlap = CHUNK_OVERLAP
 
-
     def create_documents(self) -> list:
-        """ A method to extract the document contents from the documents that exist in a folder and returns the list of documents.
-        """
+        """A method to extract the document contents from the documents that exist in a folder and returns the list of documents."""
 
         loader_mapping = {
-                '.pdf': PDFMinerLoader,
-                '.docx': UnstructuredWordDocumentLoader,
-                '.txt': TextLoader,
-                '.xlsx': UnstructuredExcelLoader,
-            }
-        
+            ".pdf": PDFMinerLoader,
+            ".docx": UnstructuredWordDocumentLoader,
+            ".txt": TextLoader,
+            ".xlsx": UnstructuredExcelLoader,
+        }
+
         # Check if documents folder exist and not empty
-        if os.path.exists(self.knowledge_base_path) and os.listdir(self.knowledge_base_path):
+        if os.path.exists(self.knowledge_base_path) and os.listdir(
+            self.knowledge_base_path
+        ):
             # Define empty documents list
             documents = []
 
@@ -60,19 +69,25 @@ class VECTOR_DB_UTILS:
             for file_name in os.listdir(self.knowledge_base_path):
                 file_path = os.path.join(self.knowledge_base_path, file_name)
                 ext = "." + file_path.rsplit(".", 1)[-1]
-                
+
                 if ext in loader_mapping:
-                    loader_class = loader_mapping[ext]  # get the defined loader class for the given file type
+                    loader_class = loader_mapping[
+                        ext
+                    ]  # get the defined loader class for the given file type
                     loader = loader_class(file_path)  # define the loader for the file
-                    document_contents = loader.load()  # extract the document contents using loader
-                    documents.extend(document_contents)  # Append the existing document list
+                    document_contents = (
+                        loader.load()
+                    )  # extract the document contents using loader
+                    documents.extend(
+                        document_contents
+                    )  # Append the existing document list
                 else:
                     raise ValueError(f"Unsupported file extension: {ext}")
-        
+
             return documents
         else:
             return None
-        
+
     def _get_video_info(self, yt_url) -> dict:
         """Get important video information.
 
@@ -103,38 +118,46 @@ class VECTOR_DB_UTILS:
             "author": yt.author,
         }
         return video_info
-        
+
     def youtube_transcript(self, yt_url):
-        """ A method to extract transcriptions from Youtube video and create
-        """
+        """A method to extract transcriptions from Youtube video and create"""
         try:
-            loader = YoutubeLoader.from_youtube_url(youtube_url=yt_url, add_video_info=True)
+            loader = YoutubeLoader.from_youtube_url(
+                youtube_url=yt_url, add_video_info=True
+            )
             yt_transcript = loader.load()
-            #return [Document(page_content=yt_transcript, metadata={"source": yt_url})]
+            # return [Document(page_content=yt_transcript, metadata={"source": yt_url})]
             return yt_transcript
         except Exception as e:
             print(f"Error while loading transcripts from youtube video: {e}")
             return None
 
     def process_documents(self, documents):
-        """ A method to convert the extracted documents into chunks and return splitted data.
-        """
+        """A method to convert the extracted documents into chunks and return splitted data."""
 
         # Define the text splitter configurations
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP)
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP
+        )
 
         if not documents:
             print("No new document to process")
             return None
         else:
             text_chunks = text_splitter.split_documents(documents)
-        
+
         return text_chunks
 
-    
-    def run_db_build(self, input_type, embeddings, page_content="", source_url= "", db_persist: bool=True, **kwargs):
-        """ A method to build the vector db and store in the defined database path.
-        """
+    def run_db_build(
+        self,
+        input_type,
+        embeddings,
+        page_content="",
+        source_url="",
+        db_persist: bool = True,
+        **kwargs,
+    ):
+        """A method to build the vector db and store in the defined database path."""
         try:
             start_time = time.time()
             os.makedirs(self.db_path, exist_ok=True)
@@ -143,7 +166,9 @@ class VECTOR_DB_UTILS:
             if input_type == "documents":
                 documents = self.create_documents()
             elif input_type == "web_url":
-                documents = [Document(page_content=page_content, metadata={"source": source_url})]
+                documents = [
+                    Document(page_content=page_content, metadata={"source": source_url})
+                ]
             elif input_type == "yt_url":
                 documents = self.youtube_transcript(yt_url=source_url)
 
@@ -151,29 +176,31 @@ class VECTOR_DB_UTILS:
             if documents is not None:
                 processed_documents = self.process_documents(documents=documents)
             else:
-                print("No document content is provided.")                
+                print("No document content is provided.")
 
             # Build vector db
-            db = FAISS.from_documents(documents=processed_documents, embedding=embeddings)
+            db = FAISS.from_documents(
+                documents=processed_documents, embedding=embeddings
+            )
 
             if db_persist:
                 db.save_local(self.db_path)
                 # Implement logic to save the db to local
-            
+
             end_time = time.time()
 
-            return db, end_time-start_time
-        
+            return db, end_time - start_time
+
         except Exception as e:
             error_msg = f"An error occurred while reading files: {e}"
             print(error_msg)
             return None, 0.00
 
     def load_local_db(self, embeddings):
-        """ A simple method to load locally saved vector database.
-        """
-        if os.path.exists(self.db_path) and os.path.isfile(os.path.join(self.db_path, "index.faiss")):
+        """A simple method to load locally saved vector database."""
+        if os.path.exists(self.db_path) and os.path.isfile(
+            os.path.join(self.db_path, "index.faiss")
+        ):
             return FAISS.load_local(self.db_path, embeddings)
         else:
             return None
-        

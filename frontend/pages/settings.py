@@ -11,7 +11,17 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 src_path = os.path.abspath(os.path.join(project_root, "src"))
 sys.path.insert(0, src_path)
 
+from gpt_utils import GPT_UTILS
+
 icon = Image.open("assets/Everything-GPT.ico")
+
+
+def set_open_api_key(api_key: str):
+    st.session_state.OPENAI_API_KEY = api_key
+    st.session_state.valid_key = True
+    st.session_state.open_api_key_configured = True
+    print("OPENAI API key is Configured Successfully!")
+
 
 #### Set Page Config
 def page_config():
@@ -24,13 +34,45 @@ def page_config():
     with open("assets/Everything-GPT-dark.png", "rb") as f:
         data = base64.b64encode(f.read()).decode("utf-8")
         st.sidebar.markdown(
-        f"""
+            f"""
         <div style="display:table;margin-top:-30%; margin-left: 10%;">
             <img src="data:image/png;base64,{data}" >
         </div>
         """,
-        unsafe_allow_html=True,
+            unsafe_allow_html=True,
         )
+
+    if "valid_key" not in st.session_state:
+        st.session_state.valid_key = False
+        st.session_state.gpt = ""
+
+    with st.sidebar:
+        api_key_form = st.form("OPENAI_API_KEY_FORM")
+        openai_api_key_input = api_key_form.text_input(
+            "Paste your OpenAI API Key",
+            type="password",
+            placeholder="Paste your API Key here (sk-...)",
+            help="You can get your API key from https://platform.openai.com/account/api-keys.",
+            value=st.session_state.get("OPEN_API_KEY", ""),
+        )
+        configure_api_key = api_key_form.form_submit_button("Configure API Key")
+
+        if configure_api_key:
+            # Validate the API Key
+            if openai_api_key_input:
+                test_gpt = GPT_UTILS(api_key=openai_api_key_input)
+                if test_gpt.validate_key():
+                    set_open_api_key(openai_api_key_input)
+                else:
+                    st.error("Invalid API Key. Please re-configure with Valid API Key")
+
+        if not st.session_state.get("open_api_key_configured"):
+            st.warning("Please configure your OpenAI API key!")
+        else:
+            st.success("OpenAI API Key is Configured!")
+            st.session_state.gpt = GPT_UTILS(
+                api_key=st.session_state.get("OPENAI_API_KEY", "")
+            )
 
 
 @st.cache_resource
@@ -48,13 +90,8 @@ def custom_css():
 
 
 def switch_main():
-    if st.sidebar.button("⬅️ Main", use_container_width=True):
+    if st.sidebar.button("⬅️ Main Page", use_container_width=True):
         switch_page("main")
-
-
-def initialization():
-    if "page" not in st.session_state:
-        st.session_state.page = "main"
 
 
 def delete_folder_contents(folder_path):
@@ -67,18 +104,19 @@ def delete_folder_contents(folder_path):
     else:
         print(f"Folder '{folder_path}' does not exist.")
 
+
 def count_files_in_directory(directory):
-    """ A function to count files in directory"""
+    """A function to count files in directory"""
     if not os.path.exists(directory):
         return 0
-    
+
     if not os.path.isdir(directory):
         return 0
-    
+
     file_count = 0
     for _, _, files in os.walk(directory):
         file_count += len(files)
-    
+
     return file_count
 
 
@@ -91,8 +129,9 @@ def write_uploaded_file(uploaded_file, folder_path):
         file_path = os.path.join(folder_path, uploaded_file.name)
         with open(file_path, "wb") as f:
             f.write(uploaded_file.read())
-        
+
         return file_path, uploaded_file.type
+
 
 def write_uploaded_files(uploaded_files, folder_path):
     """A streamlit function to write the multiple files to local directory from streamlit file uploader"""
@@ -101,7 +140,7 @@ def write_uploaded_files(uploaded_files, folder_path):
 
     # Validate files and copy to new_files directory
     if len_uploaded_files != 0:
-        try:         
+        try:
             # Create directory if not exists
             os.makedirs(folder_path, exist_ok=True)
             file_count = 0
@@ -113,14 +152,18 @@ def write_uploaded_files(uploaded_files, folder_path):
                     f.write(file.read())
                 file_count += 1
                 # Display a success message after upload is done
-                msg.toast(f"Uploaded {file_count}/{len_uploaded_files} files: {file.name}")
+                msg.toast(
+                    f"Uploaded {file_count}/{len_uploaded_files} files: {file.name}"
+                )
 
             if file_count == len_uploaded_files:
                 st.success("All files uploaded and validated successfully.")
                 msg.toast(f"Upload Complete.", icon="✔️")
                 upload_success = True
             elif file_count > 0 and file_count <= len_uploaded_files:
-                st.warning(f"Only {file_count} out of {len_uploaded_files} files are uploaded.")
+                st.warning(
+                    f"Only {file_count} out of {len_uploaded_files} files are uploaded."
+                )
                 msg.toast(f"Upload Complete.", icon="⚠️")
                 upload_success = True
             else:
@@ -135,5 +178,5 @@ def write_uploaded_files(uploaded_files, folder_path):
     else:
         st.error("Please add the files first.")
         upload_success = False
-    
+
     return upload_success

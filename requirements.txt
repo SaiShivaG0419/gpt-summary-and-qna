@@ -12,3 +12,4 @@ unstructured
 youtube-transcript-api
 pytube
 openpyxl
+black

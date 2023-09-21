@@ -3,7 +3,7 @@
 from langchain.prompts import PromptTemplate
 
 
-def summarize_cv(resume_context: str, word_limit: int=250):
+def summarize_cv(resume_context: str, word_limit: int = 250):
     """A prompt template to summariza the CV content."""
     delimitter = "####"
     system_message = f"""You are an intelligent talent recruiting professional. \
@@ -26,7 +26,8 @@ def summarize_cv(resume_context: str, word_limit: int=250):
 
     return messages
 
-def summarize_text(text_input: str, word_limit: int=250):    
+
+def summarize_text(text_input: str, word_limit: int = 250):
     """A prompt template to summarize the given text content."""
     delimitter = "####"
     system_message = f"""You are an helpful assistant and follows given instructions. \
@@ -37,10 +38,11 @@ def summarize_text(text_input: str, word_limit: int=250):
     messages = [
         {"role": "system", "content": system_message},
         {"role": "user", "content": f"{delimitter}{text_input}{delimitter}"},
-        {"role": "assistant", "content": "Helpful Summarized content:\n"}
+        {"role": "assistant", "content": "Helpful Summarized content:\n"},
     ]
 
     return messages
+
 
 def extract_cv_details(resume_context, response_schema):
     """A prompt template to extract CV content in Json format."""
@@ -57,13 +59,12 @@ def extract_cv_details(resume_context, response_schema):
         """
     messages = [
         {"role": "system", "content": system_message},
-        {"role": "user", "content": f"{delimitter}{resume_context}{delimitter}"},     
+        {"role": "user", "content": f"{delimitter}{resume_context}{delimitter}"},
     ]
-    functions = [
-        {"name": "json_response", "parameters": response_schema}
-    ]
+    functions = [{"name": "json_response", "parameters": response_schema}]
 
     return messages, functions
+
 
 def prompt_doc_qa():
     """A prompt template to define a prompt template for Question and Answering of a document."""
@@ -79,7 +80,9 @@ def prompt_doc_qa():
         Question: {question} \
         Helpful Answer: \
         """
-    
-    qa_chain_prompt = PromptTemplate(input_variables=["context", "question"],template=template)
+
+    qa_chain_prompt = PromptTemplate(
+        input_variables=["context", "question"], template=template
+    )
 
     return qa_chain_prompt
