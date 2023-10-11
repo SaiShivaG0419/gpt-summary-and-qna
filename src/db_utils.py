@@ -26,15 +26,15 @@ with open(f"{project_root}/config/config.json", "r") as config_file:
     config = json.load(config_file)
 
 # Load Config Values
-KNOWLDGE_BASE_DIR = config[
-    "KNOWLDGE_BASE_DIR"
+KNOWLEDGE_BASE_DIR = config[
+    "KNOWLEDGE_BASE_DIR"
 ]  # Load Knowledge base directory name
 FAISS_DB_DIR = config["FAISS_DB_DIR"]  # Load Vector database directory name
 CHUNK_SIZE = config["CHUNK_SIZE"]  # Loading Text chunk size as integer variable
 CHUNK_OVERLAP = config["CHUNK_OVERLAP"]  # Loading Text chunk overlap as integer variable
 
 
-knowledge_base_path = f"{project_root}/{KNOWLDGE_BASE_DIR}"
+knowledge_base_path = f"{project_root}/{KNOWLEDGE_BASE_DIR}"
 faiss_db_path = f"{project_root}/{FAISS_DB_DIR}"
 
 

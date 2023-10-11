@@ -25,8 +25,8 @@ with open(f"{project_root}/config/config.json", "r") as config_file:
     config = json.load(config_file)
 
 # Load Config Values
-KNOWLDGE_BASE_DIR = config[
-    "KNOWLDGE_BASE_DIR"
+KNOWLEDGE_BASE_DIR = config[
+    "KNOWLEDGE_BASE_DIR"
 ]  # Load Knowledge base directory name
 FAISS_DB_DIR = config["FAISS_DB_DIR"]  # Load Vector database directory name
 
@@ -40,7 +40,7 @@ from url_utils import *
 vector_db = VECTOR_DB_UTILS()
 
 # Path for the knowledge base documents
-kb_path = f"{project_root}/{KNOWLDGE_BASE_DIR}"
+kb_path = f"{project_root}/{KNOWLEDGE_BASE_DIR}"
 db_path = f"{project_root}/{FAISS_DB_DIR}"
 
 
