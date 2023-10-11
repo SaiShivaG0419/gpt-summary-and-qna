@@ -12,20 +12,24 @@ from pages.settings import (
     write_uploaded_files,
     count_files_in_directory,
 )
-from dotenv import load_dotenv, find_dotenv
 
-_ = load_dotenv(find_dotenv())  # read local .env file
-
-# Load Environment Variables
-KNOWLDGE_BASE_DIR = os.environ[
-    "KNOWLDGE_BASE_DIR"
-]  # Load Knowledge base directory name
-FAISS_DB_DIR = os.environ["FAISS_DB_DIR"]  # Load Vector database directory name
 
 # Get the absolute path to the project root directory
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 src_path = os.path.abspath(os.path.join(project_root, "src"))
 sys.path.insert(0, src_path)
+
+
+# Load the config.json file
+with open(f"{project_root}/config/config.json", "r") as config_file:
+    config = json.load(config_file)
+
+# Load Config Values
+KNOWLDGE_BASE_DIR = config[
+    "KNOWLDGE_BASE_DIR"
+]  # Load Knowledge base directory name
+FAISS_DB_DIR = config["FAISS_DB_DIR"]  # Load Vector database directory name
+
 
 # Loading prompt templates and GPT Utilities from src
 from prompts import prompt_doc_qa
