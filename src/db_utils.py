@@ -6,7 +6,7 @@ import os
 import time
 import json
 from langchain.vectorstores import FAISS
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter, TokenTextSplitter
 from langchain.document_loaders import (
     TextLoader,
     PDFMinerLoader,
@@ -33,6 +33,8 @@ FAISS_DB_DIR = config["FAISS_DB_DIR"]  # Load Vector database directory name
 CHUNK_SIZE = config["CHUNK_SIZE"]  # Loading Text chunk size as integer variable
 CHUNK_OVERLAP = config["CHUNK_OVERLAP"]  # Loading Text chunk overlap as integer variable
 
+# Path for the temporary documents
+temp_dir_path = f"{project_root}/temp_docs"
 
 knowledge_base_path = f"{project_root}/{KNOWLDGE_BASE_DIR}"
 faiss_db_path = f"{project_root}/{FAISS_DB_DIR}"
@@ -42,12 +44,13 @@ class VECTOR_DB_UTILS:
     """A class to define various utilities for vector databases."""
 
     def __init__(self) -> None:
+        self.temp_dir_path = temp_dir_path
         self.knowledge_base_path = knowledge_base_path
         self.db_path = faiss_db_path
         self.chunk_size = CHUNK_SIZE
         self.chunk_overlap = CHUNK_OVERLAP
 
-    def create_documents(self) -> list:
+    def create_documents(self, task_type) -> list:
         """A method to extract the document contents from the documents that exist in a folder and returns the list of documents."""
 
         loader_mapping = {
@@ -57,16 +60,19 @@ class VECTOR_DB_UTILS:
             ".xlsx": UnstructuredExcelLoader,
         }
 
+        if task_type == "Summarization":
+            dir_path = self.temp_dir_path
+        elif task_type == "QnA":
+            dir_path = self.knowledge_base_path
+
         # Check if documents folder exist and not empty
-        if os.path.exists(self.knowledge_base_path) and os.listdir(
-            self.knowledge_base_path
-        ):
+        if os.path.exists(dir_path) and os.listdir(dir_path):
             # Define empty documents list
             documents = []
 
             # Iterate over files and extract the text from documents
-            for file_name in os.listdir(self.knowledge_base_path):
-                file_path = os.path.join(self.knowledge_base_path, file_name)
+            for file_name in os.listdir(dir_path):
+                file_path = os.path.join(dir_path, file_name)
                 ext = "." + file_path.rsplit(".", 1)[-1]
 
                 if ext in loader_mapping:
@@ -131,14 +137,31 @@ class VECTOR_DB_UTILS:
             print(f"Error while loading transcripts from youtube video: {e}")
             return None
 
-    def process_documents(self, documents):
-        """A method to convert the extracted documents into chunks and return splitted data."""
+    def docs_generator(self, task_type, input_type, page_content="", source_url=""):
+        """A function to define the logic to generate documents based on input type."""
+
+        if input_type == "documents":
+            documents = self.create_documents(task_type)
+        elif input_type == "web_url":
+            documents = [
+                Document(page_content=page_content, metadata={"source": source_url})
+            ]
+        elif input_type == "yt_url":
+            documents = self.youtube_transcript(yt_url=source_url)
+        
+        return documents
+    
+    def split_documents(self, task_type, documents, chunk_size=1000, chunk_overlap=0):
+        """A function to define the logic to split the documents by either define character chunk size or token size."""
 
         # Define the text splitter configurations
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP
-        )
-
+        if task_type == "Summarization":
+            text_splitter = TokenTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+        elif task_type == "QnA":
+            text_splitter = RecursiveCharacterTextSplitter(
+                chunk_size=self.chunk_size, chunk_overlap=self.chunk_overlap
+            )
+        
         if not documents:
             print("No new document to process")
             return None
@@ -162,18 +185,11 @@ class VECTOR_DB_UTILS:
             os.makedirs(self.db_path, exist_ok=True)
 
             # Get extracted documents content
-            if input_type == "documents":
-                documents = self.create_documents()
-            elif input_type == "web_url":
-                documents = [
-                    Document(page_content=page_content, metadata={"source": source_url})
-                ]
-            elif input_type == "yt_url":
-                documents = self.youtube_transcript(yt_url=source_url)
+            documents = self.docs_generator("QnA", input_type, page_content, source_url)
 
             # Get the text chunks
             if documents is not None:
-                processed_documents = self.process_documents(documents=documents)
+                processed_documents = self.split_documents(task_type="QnA", documents=documents)
             else:
                 print("No document content is provided.")
 

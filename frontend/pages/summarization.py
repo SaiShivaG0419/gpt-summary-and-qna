@@ -63,6 +63,13 @@ def gpt_completions(text_input: str, word_limit: int):
     return gpt_summary, tokens_used, execution_time
 
 
+def large_context_summary(text_input: str, input_type: str, **kwargs):
+    """A function to parse large context text and get summaries from GPT model"""
+
+    # Start timer
+    start_time = time.time()
+
+
 def summary_text():
     """A streamlit function to show the input options and summarize when text input is selected"""
 
@@ -120,8 +127,14 @@ def summary_url():
                     st.error(
                         "Unable to extract text content from this URL. Please try other URL."
                     )
-                elif len(extracted_text) > 10000:
-                    st.error("The extracted web content is too large to summarize.")
+                elif st.session_state.gpt.num_tokens_from_string(extracted_text) > 3500:
+                    st.info(f"text length: {len(extracted_text)}, tokens: {st.session_state.gpt.num_tokens_from_string(extracted_text)}")
+                    #st.error("The extracted web content is too large to summarize.")
+                    document = vector_db.docs_generator(task_type="Summarization", input_type="web_url", page_content=extracted_text, source_url=url_input)
+                    document_chunks = vector_db.split_documents(task_type="Summarization", documents=document, chunk_size=4000, chunk_overlap=0)
+                    summary = st.session_state.gpt.summarize_large_text(document_chunks)
+                    st.write(summary['output_text'])
+
                 else:
                     summarized_text, tokens_used, exec_time = gpt_completions(
                         text_input=extracted_text, word_limit=word_limit

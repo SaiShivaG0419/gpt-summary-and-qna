@@ -7,6 +7,8 @@ import tiktoken  # Importing tiktoken library to calculate the number of tokens
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import RetrievalQA
+from langchain.chains.summarize import load_summarize_chain
+from langchain.prompts import PromptTemplate
 
 # Get the absolute path to the project root directory
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -31,8 +33,11 @@ class GPT_UTILS:
         self.default_model = default_model
         self.large_context_model = large_context_model
         self.embeddings = OpenAIEmbeddings(openai_api_key=self.api_key)
-        self.langchain_llm = ChatOpenAI(
-            openai_api_key=self.api_key, model=self.default_model, temperature=0.5, max_tokens=512
+        self.langchain_llm_QnA = ChatOpenAI(
+            openai_api_key=self.api_key, model=self.default_model, temperature=0, max_tokens=512
+        )
+        self.langchain_llm_Sum = ChatOpenAI(
+            openai_api_key=self.api_key, model=self.large_context_model, temperature=0, max_tokens=1024
         )
         
 
@@ -116,6 +121,46 @@ class GPT_UTILS:
 
         return response
 
+    def summarize_large_text(self, documents):
+        """A function to use langchain and summarize large documents (i.e. When the size of document exceeds the context window limit)"""
+
+        openai.api_key = self.api_key
+
+        prompt_template = """Write a concise summary of the following extracting the key information:
+
+        {text}
+
+        CONCISE SUMMARY:"""
+        PROMPT = PromptTemplate(template=prompt_template, 
+                                input_variables=["text"])
+
+        refine_template = (
+            "Your job is to produce a final summary\n"
+            "We have provided an existing summary up to a certain point: {existing_answer}\n"
+            "We have the opportunity to refine the existing summary"
+            "(only if needed) with some more context below.\n"
+            "------------\n"
+            "{text}\n"
+            "------------\n"
+            "Given the new context, refine the original summary"
+            "If the context isn't useful, return the original summary."
+        )
+        refine_prompt = PromptTemplate(
+            input_variables=["existing_answer", "text"],
+            template=refine_template,
+        )
+        chain = load_summarize_chain(self.langchain_llm_Sum, 
+                                    chain_type="refine", 
+                                    return_intermediate_steps=True, 
+                                    question_prompt=PROMPT, 
+                                    refine_prompt=refine_prompt)
+
+        output_summary = chain({"input_documents": documents}, return_only_outputs=True)
+
+        return output_summary
+
+
+
     def retrieval_qa(self, query, prompt, db, return_source_documents: bool = True):
         """A function to use retrivers from vectorstores and generate completions with GPT models."""
 
@@ -123,7 +168,7 @@ class GPT_UTILS:
         try:
             retriever = db.as_retriever(search_type="mmr", search_kwargs={"k": 6})
             retriever_qa_chain = RetrievalQA.from_chain_type(
-                llm=self.langchain_llm,
+                llm=self.langchain_llm_QnA,
                 retriever=retriever,
                 chain_type="stuff",
                 return_source_documents=return_source_documents,
