@@ -246,7 +246,7 @@ def summarization():
     summarized_text = ""
 
     if not st.session_state.valid_key:
-        st.warning("Invalid Open AI API Key. Please re-configure your Open AI API Key.")
+        st.warning("Invalid or No OpenAI API Key configured. Please re-configure your OpenAI API Key.")
 
     col1, col2 = st.columns([0.2, 0.8])
     input_option = col1.radio(

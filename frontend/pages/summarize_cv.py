@@ -46,7 +46,7 @@ st.info(
 
 
 if not st.session_state.valid_key:
-    st.warning("Invalid Open AI API Key. Please re-configure your Open AI API Key.")
+    st.warning("Invalid or No OpenAI API Key configured. Please re-configure your OpenAI API Key.")
 
 
 summarized_text = ""
