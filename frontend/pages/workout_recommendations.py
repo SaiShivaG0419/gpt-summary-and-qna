@@ -80,7 +80,7 @@ def workout_recommender():
 
                 prompt = recommend_workouts(user_inputs=user_inputs)
                 gpt_response = st.session_state.gpt.get_completion_from_messages(messages=prompt)
-                workout_plan = gpt_response.choices[0].message["content"]
+                workout_plan = gpt_response.choices[0].message.content
                 tokens_used = gpt_response.usage.total_tokens
 
                 # End timer
