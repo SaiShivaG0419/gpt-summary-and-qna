@@ -73,7 +73,7 @@ def recommend_workouts(user_inputs:dict):
         Your job is to create a workout routine for a week based on the given user inputs with detailed plan. \
         Your output must be a table with columns Day, Workout style, Workout details. \
         Day column must have values as Day-1, Day-2 ... etc. \
-        You must give preference to user inputs. You can accomedate the plan for multiple worut routines.\
+        You must give preference to user inputs. You can accomedate the plan for multiple workout routines.\
         Plan should utilize maximum given days per week and must have a rest day. \
         If maximum days are choosen, plan last day as rest day else remaining days are rest days. \
         You can prioritize rest days in between workout days for maximum muscle relaxation. \
@@ -81,7 +81,7 @@ def recommend_workouts(user_inputs:dict):
             Workout Style: "Rest Day"
             Workout details: Must include details about basic stretches, must follow routines targetting their fitness goal like maintaining step count or basic mobility exercises. \
 
-        Workout details must be as precise and descriptive as possible. Include weight details, number of sets per each variation, repitations, rest time between sets etc. \
+        Workout details must be as precise and descriptive as possible. Include weight details, number of sets per each variation, repeatations, rest time between sets etc. \
         For yoga, workout details must include various poses, number of seconds or minutes to perform, rest time details. \
         For cardio and pilates also you must include type of exercise, detailed prescription of performing it including rest time details. \
 
@@ -90,7 +90,7 @@ def recommend_workouts(user_inputs:dict):
             Fitness Goal: {user_inputs['fitness_goal']},
             Fitness Level: {user_inputs['fitness_level']},
             Workout Styles: {user_inputs['workout_style']},
-            Workout days per week: {user_inputs['days_per_week']},
+            Workout days per week: {user_inputs['days_per_week']} days,
             Workout Location: {user_inputs['workout_location']}
         """
     

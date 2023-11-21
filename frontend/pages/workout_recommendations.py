@@ -57,8 +57,9 @@ def workout_recommender():
                                 placeholder="Please select your preferred workout styles")
                                 # captions=['🏋🏻', '🏃🏻‍♂️', '🧘🏻‍♀️', '🤸🏻'],
                                 # horizontal=True,)
-        Days_per_week = st.radio(label="How many days do you workout per week?",
-                                options=['1-2 days','3-4 days','5-6 days','7 days'])
+        Days_per_week = st.slider(label="How many days do you workout per week?",
+                                min_value=1,
+                                max_value=7)
         Workout_Location = st.radio(label="Where do you prefer to workout?",
                                 options=['Home Only','Gym or Fitness Studio'])
         submit = st.form_submit_button(label="Get the Workout Routine 💪🏻",
