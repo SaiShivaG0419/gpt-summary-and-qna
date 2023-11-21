@@ -36,6 +36,8 @@ if st.sidebar.button("Summarize CV 🗒️", use_container_width=True):
     switch_page("summarize_cv")
 if st.sidebar.button("QnA with your data 📒", use_container_width=True):
     switch_page("query_with_data")
+if st.sidebar.button("Workout Recommender 🏋🏻", use_container_width=True):
+    switch_page("workout_recommendations")
 # if st.sidebar.button("Process Resumes ⚙️", use_container_width=True, disabled=True):
 #    switch_page("process_resumes")
 

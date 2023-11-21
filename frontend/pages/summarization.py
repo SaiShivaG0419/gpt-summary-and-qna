@@ -51,7 +51,8 @@ def gpt_completions(text_input: str, word_limit: int):
 
     prompt = summarize_text(text_input=text_input, word_limit=word_limit)
     gpt_response = st.session_state.gpt.get_completion_from_messages(messages=prompt)
-    gpt_summary = gpt_response.choices[0].message["content"]
+    print(gpt_response)
+    gpt_summary = gpt_response.choices[0].message.content
     tokens_used = gpt_response.usage.total_tokens
 
     # End timer
@@ -116,15 +117,17 @@ def summary_url():
         if submit_button:
             if validate_input_url(url_input):
                 extracted_text = extract_text_url(url_input)
-                if len(extracted_text) == 0:
+                if extracted_text is not None:
+                    num_tokens = st.session_state.gpt.num_tokens_from_string(extracted_text)
+                    if num_tokens < 10000:
+                        summarized_text, tokens_used, exec_time = gpt_completions(
+                            text_input=extracted_text, word_limit=word_limit
+                        )
+                    else:
+                        st.error("The extracted web content is too large to summarize.")
+                else:
                     st.error(
                         "Unable to extract text content from this URL. Please try other URL."
-                    )
-                elif len(extracted_text) > 10000:
-                    st.error("The extracted web content is too large to summarize.")
-                else:
-                    summarized_text, tokens_used, exec_time = gpt_completions(
-                        text_input=extracted_text, word_limit=word_limit
                     )
             else:
                 st.error("Invalid URL. Please correct and submit again.")
@@ -154,15 +157,17 @@ def summary_ytvideo():
             # Validate the YouTube Video URL
             if validate_youtube_url(yt_url):
                 extracted_text = vector_db.youtube_transcript(yt_url=yt_url)
-                if len(extracted_text) == 0:
+                if extracted_text is not None:
+                    num_tokens = st.session_state.gpt.num_tokens_from_string(extracted_text)
+                    if num_tokens < 10000:
+                        summarized_text, tokens_used, exec_time = gpt_completions(
+                            text_input=extracted_text, word_limit=word_limit
+                        )
+                    else:
+                        st.error("The extracted transcript is too large to summarize.")
+                else:
                     st.error(
                         "Unable to extract transcript from this Video. Please try other Video URLs"
-                    )
-                elif len(extracted_text) > 10000:
-                    st.error("The extracted web content is too large to summarize.")
-                else:
-                    summarized_text, tokens_used, exec_time = gpt_completions(
-                        text_input=extracted_text, word_limit=word_limit
                     )
             else:
                 st.error("Invalid URL. Please correct and submit again.")
@@ -207,15 +212,17 @@ def summary_document():
                 with open(file_path) as f:
                     extracted_text = f.read()
 
-            if len(extracted_text) == 0:
+            if extracted_text is not None:
+                num_tokens = st.session_state.gpt.num_tokens_from_string(extracted_text)
+                if num_tokens < 10000:
+                    summarized_text, tokens_used, exec_time = gpt_completions(
+                        text_input=extracted_text, word_limit=word_limit
+                    )
+                else:
+                    st.error("The extracted text content is too large to summarize.")
+            else:
                 st.error(
                     "Unable to extract text content from this document. Please try with other document."
-                )
-            elif len(extracted_text) > 10000:
-                st.error("The extracted text content is too large to summarize.")
-            else:
-                summarized_text, tokens_used, exec_time = gpt_completions(
-                    text_input=extracted_text, word_limit=word_limit
                 )
 
     return summarized_text, tokens_used, exec_time
@@ -246,7 +253,7 @@ def summarization():
     summarized_text = ""
 
     if not st.session_state.valid_key:
-        st.warning("Invalid Open AI API Key. Please re-configure your Open AI API Key.")
+        st.warning("Invalid or No OpenAI API Key configured. Please re-configure your OpenAI API Key.")
 
     col1, col2 = st.columns([0.2, 0.8])
     input_option = col1.radio(

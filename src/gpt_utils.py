@@ -2,8 +2,8 @@
 
 import os
 import json
-import openai  # Importing Open AI library
 import tiktoken  # Importing tiktoken library to calculate the number of tokens
+from openai import OpenAI  # Importing Open AI library
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import RetrievalQA
@@ -28,6 +28,7 @@ class GPT_UTILS:
 
     def __init__(self, api_key) -> None:
         self.api_key = api_key
+        self.client = OpenAI(api_key=self.api_key)
         self.default_model = default_model
         self.large_context_model = large_context_model
         self.embeddings = OpenAIEmbeddings(openai_api_key=self.api_key)
@@ -39,9 +40,9 @@ class GPT_UTILS:
     def validate_key(self) -> bool:
         """A function to validate the Open AI API Key"""
 
-        openai.api_key = self.api_key
+        #openai.api_key = self.api_key
         try:
-            response = openai.ChatCompletion.create(
+            response = self.client.chat.completions.create(
                 model=self.default_model,  # loading default gpt model
                 messages=[
                     {"role": "system", "content": "Test Prompt"},
@@ -96,18 +97,23 @@ class GPT_UTILS:
     ):
         """A function to get completion from provided messages using GPT models."""
 
-        openai.api_key = self.api_key
+        #openai.api_key = self.api_key
         if len(functions) > 0:
-            response = openai.ChatCompletion.create(
+            response = self.client.chat.completions.create(
                 model=self.select_model(messages=messages, max_tokens=max_tokens),
                 messages=messages,
-                functions=functions,
-                function_call="auto",
+                tools = [
+                    {
+                        "type": "function",
+                        "function": functions[0]
+                    }
+                ],
+                tool_choice="auto",
                 temperature=temperature,
                 max_tokens=max_tokens,
             )
         else:
-            response = openai.ChatCompletion.create(
+            response = self.client.chat.completions.create(
                 model=self.select_model(messages=messages, max_tokens=max_tokens),
                 messages=messages,
                 temperature=temperature,
@@ -119,7 +125,7 @@ class GPT_UTILS:
     def retrieval_qa(self, query, prompt, db, return_source_documents: bool = True):
         """A function to use retrivers from vectorstores and generate completions with GPT models."""
 
-        openai.api_key = self.api_key
+        #openai.api_key = self.api_key
         try:
             retriever = db.as_retriever(search_type="mmr", search_kwargs={"k": 6})
             retriever_qa_chain = RetrievalQA.from_chain_type(

@@ -46,7 +46,7 @@ st.info(
 
 
 if not st.session_state.valid_key:
-    st.warning("Invalid Open AI API Key. Please re-configure your Open AI API Key.")
+    st.warning("Invalid or No OpenAI API Key configured. Please re-configure your OpenAI API Key.")
 
 
 summarized_text = ""
@@ -103,7 +103,7 @@ with col1:
                 gpt_response = st.session_state.gpt.get_completion_from_messages(
                     messages=prompt
                 )
-                summarized_text = gpt_response.choices[0].message["content"]
+                summarized_text = gpt_response.choices[0].message.content
                 tokens_used = gpt_response.usage.total_tokens
 
                 # End timer
@@ -121,7 +121,7 @@ with col1:
                 gpt_response = st.session_state.gpt.get_completion_from_messages(
                     messages=prompt, functions=cv_details_schema
                 )
-                gpt_summary = gpt_response.choices[0].message.function_call.arguments
+                gpt_summary = gpt_response.choices[0].message.tool_calls[0].function.arguments
                 tokens_used = gpt_response.usage.total_tokens
                 # st.markdown("#### GPT Response:")
                 # st.markdown(gpt_summary)

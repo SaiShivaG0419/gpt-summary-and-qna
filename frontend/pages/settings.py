@@ -33,18 +33,18 @@ def page_config():
     )
     with open("assets/Everything-GPT-dark.png", "rb") as f:
         data = base64.b64encode(f.read()).decode("utf-8")
-        st.sidebar.markdown(
-            f"""
-            <div style="display:table;margin-top:-30%; margin-left: 10%;">
-                <img src="data:image/png;base64,{data}" >
-            </div>
+    st.sidebar.markdown(
+        f"""
+        <div style="display:table;margin-top:-30%; margin-left: 10%;">
+            <img src="data:image/png;base64,{data}" >
+        </div>
 
-            <div style="position: fixed; bottom: 0; text-align: center; padding: 10px;">
-                <p>Developed by <a href="https://www.linkedin.com/in/saishivagudla/">SaiShiva G</a></p>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        <div style="position: fixed; bottom: 0; text-align: center; padding: 10px;">
+            <p>Developed by <a href="https://www.linkedin.com/in/saishivagudla/">SaiShiva G</a></p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
     if "valid_key" not in st.session_state:
         st.session_state.valid_key = False
